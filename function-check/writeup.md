@@ -1,114 +1,114 @@
 # Write-up: CyberEdu - Format String 101
 
-**Categorie:** pwn (Binary Exploitation)
-**Platformă:** CyberEdu
+**Category:** pwn (Binary Exploitation)
+**Platform:** CyberEdu
 **URL:** `https://app.cyber-edu.co/challenges/08ef6340-c1e4-11eb-9b9f-6bd8e9c6de87/`
 
 ---
 
-## 1. Analiza Inițială (Static Analysis)
+## 1. Initial Analysis (Static Analysis)
 
-Analiza binarului a început cu rularea comenzii `file` pentru a-i determina proprietățile:
+The binary analysis started by running the `file` command to determine its properties:
 
-![Output-ul comenzii file](img/filedesc.png)
+![File command output](img/filedesc.png)
 
-Din output, am extras următoarele informații critice:
+From the output, I extracted the following critical information:
 
-* **`ELF 32-bit`**: Acesta este un binar pe **32 de biți**. Toate adresele și pointerii vor avea 4 octeți. Registrele de interes vor fi `EBP`, `ESP`, `EIP`.
-* **`LSB (Least Significant Byte)`**: Binarul este **Little-Endian**. Aceasta este o informație crucială pentru construcția payload-ului, deoarece adresele (de ex. `0x0804a030`) trebuie scrise în memorie cu octeții inversați (`\x30\xa0\x04\x08`).
-* **`not stripped`**: Binarul **nu este `stripped`**. Acesta este un bonus major, deoarece tabela de simboluri este intactă. Acest lucru face analiza în Ghidra mult mai ușoară, permițându-ne să vedem nume de funcții clare, precum `main` și `printFlag`.
-
----
-
-## 2. Analiza Dinamică și Ghidra
-
-La o primă rulare, programul ne oferă un indiciu valoros: adresa exactă a variabilei pe care trebuie să o modificăm.
-
-![Rularea inițială a programului](img/rulare.png)
-
-Programul ne informează: `"Value to break is at 0x0804a030 and has a hex value 0x0000000a"`.
-
-În continuare, am deschis binarul în Ghidra pentru a analiza logica programului.
-
-### Funcția `main`
-
-![Codul decompilat al funcției main](img/main.png)
-
-Analizând funcția `main`, observăm următorul flux:
-1.  Input-ul utilizatorului este citit în `local_e8` folosind `fgets`.
-2.  Un prefix (`"Break stuff.  "`) este copiat în `local_1b0`.
-3.  Input-ul nostru (`local_e8`) este concatenat la `local_1b0` folosind `strlcat`.
-4.  **🚨 Vulnerabilitatea:** `printf(local_1b0)` este apelat. Deoarece controlăm conținutul `local_1b0`, acesta este un caz clasic de **Format String Vulnerability**.
-5.  **🎯 Obiectivul:** Programul verifică dacă `demo.3187` (variabila de la `0x0804a030`) este egală cu `0x20`. Dacă da, apelează `printFlag()`.
-
-### Funcția `printFlag`
-
-![Codul decompilat al funcției printFlag](img/printflag.png)
-
-Funcția `printFlag` este simplă: execută un apel de sistem `execve` pentru a rula `/usr/bin/cat flag.txt`, afișând astfel conținutul flag-ului.
+* **`ELF 32-bit`**: This is a **32-bit** binary. All addresses and pointers will be 4 bytes long. The registers of interest will be `EBP`, `ESP`, `EIP`.
+* **`LSB (Least Significant Byte)`**: The binary is **Little-Endian**. This is crucial information for building the payload, as addresses (e.g., `0x0804a030`) must be written into memory with their bytes reversed (`\x30\xa0\x04\x08`).
+* **`not stripped`**: The binary is **not stripped**. This is a major bonus, as the symbol table is intact. This makes the analysis in Ghidra much easier, allowing us to see clear function names like `main` and `printFlag`.
 
 ---
 
-## 3. Depanare și Construcția Payload-ului
+## 2. Dynamic Analysis and Ghidra
 
-Scopul este clar: să folosim vulnerabilitatea de format string pentru a scrie valoarea `0x20` la adresa `0x0804a030`.
+On the first run, the program gives us a valuable clue: the exact address of the variable we need to modify.
 
-### Găsirea Offset-ului (`N`)
+![Initial program run](img/rulare.png)
 
-Am pornit programul în GDB și am setat un breakpoint chiar înainte de apelul vulnerabil `printf`.
+The program informs us: `"Value to break is at 0x0804a030 and has a hex value 0x0000000a"`.
 
-![Codul assembly pentru printf](img/memorie.png)
+Next, I opened the binary in Ghidra to analyze the program's logic.
 
-La atingerea breakpoint-ului, am inspectat stiva (`x/20wx $esp`) pentru a vedea unde este localizat buffer-ul nostru:
+### The `main` Function
 
-![Inspecția stivei în GDB](img/stiva.png)
+![Decompiled `main` function](img/main.png)
 
-Putem observa că buffer-ul nostru (`local_1b0`) începe la adresa `0xffffcc70`, care corespunde celui de-**al 4-lea argument** (`Arg 4`) de pe stivă. Acesta este *offset-ul de bază*.
+Analyzing the `main` function, we observe the following flow:
+1.  User input is read into `local_e8` using `fgets`.
+2.  A prefix (`"Break stuff.  "`) is copied into `local_1b0`.
+3.  Our input (`local_e8`) is concatenated to `local_1b0` using `strlcat`.
+4.  **🚨 Vulnerability:** `printf(local_1b0)` is called. Since we control the contents of `local_1b0`, this is a classic **Format String Vulnerability**.
+5.  **🎯 Objective:** The program checks if `demo.3187` (the variable at `0x0804a030`) is equal to `0x20`. If so, it calls `printFlag()`.
 
-> **Cum funcționează atacul:**
-> Specificantul `%n` scrie numărul de octeți afișați până în acel punct la o adresă specificată de un argument de pe stivă. Folosind un specificant pozițional (de ex. `%8$n`), îi putem spune lui `printf` la care argument să se uite pentru a găsi adresa la care să scrie.
+### The `printFlag` Function
 
-### Alinierea Payload-ului
+![Decompiled `printFlag` function](img/printflag.png)
 
-Acum trebuie să plasăm adresa noastră țintă (`0x0804a030`) pe stivă, la o locație aliniată (multiplu de 4 octeți) față de baza noastră (`Arg 4`).
-
-1.  Prefixul `"Break stuff.  "` are **14 octeți** (inclusiv cele două spații de la final).
-2.  Pentru a alinia adresa noastră la o graniță de 4 octeți (16), trebuie să adăugăm **2 octeți de padding** (de ex. `\x90\x90`).
-3.  Plasăm adresa noastră țintă (`\x30\xa0\x04\x08`) imediat după.
-
-Am verificat noua structură a stivei în GDB:
-
-![Alinierea adresei pe stivă](img/corect.png)
-
-Perfect. Adresa noastră `0x0804a030` este acum plasată la `0xffffcc80`.
-
-Să calculăm indexul final `N`:
-* **Baza:** `Arg 4` (la adresa `0xffffcc70`)
-* **Offset-ul adresei:** `0xffffcc80 - 0xffffcc70 = 0x10` (16 octeți)
-* **Offset-ul în argumente:** $16 \text{ octeți} / 4 \text{ octeți/arg} = 4$
-* **Index Final `N`:** $4 \text{ (Baza)} + 4 \text{ (Offset)} = \textbf{8}$
-
-Vom folosi **`%8$n`** pentru a-i spune lui `printf` să scrie la adresa găsită la al 8-lea argument.
+The `printFlag` function is simple: it executes an `execve` syscall to run `/usr/bin/cat flag.txt`, thus displaying the flag's content.
 
 ---
 
-## 4. Payload-ul Final și Testarea Locală
+## 3. Debugging and Payload Construction
 
-Ultimul pas este să ne asigurăm că `printf` afișează *exact* `0x20` (32) de caractere înainte de a întâlni `%8$n`.
+The goal is clear: use the format string vulnerability to write the value `0x20` to the address `0x0804a030`.
 
-Calculul caracterelor afișate:
-* **Prefix:** 14 caractere (`"Break stuff.  "`)
-* **Padding aliniere:** 2 caractere (`\x90\x90`)
-* **Adresa:** 4 caractere (tratate ca text de `printf`)
-* **Total până acum:** $14 + 2 + 4 = 20$ de caractere.
-* **Padding de numărare:** $32 \text{ (ținta)} - 20 \text{ (actual)} = \textbf{12}$ caractere (de ex. `A` * 12).
+### Finding the Offset (`N`)
 
-Payload-ul final devine:
+I started the program in GDB and set a breakpoint just before the vulnerable `printf` call.
+
+![Assembly code for printf](img/memorie.png)
+
+Upon hitting the breakpoint, I inspected the stack (`x/20wx $esp`) to see where our buffer was located:
+
+![Inspecting the stack in GDB](img/stiva.png)
+
+We can see that our buffer (`local_1b0`) starts at address `0xffffcc70`, which corresponds to the **4th argument** (`Arg 4`) on the stack. This is our *base offset*.
+
+> **How the attack works:**
+> The `%n` specifier writes the number of bytes printed so far to an address specified by an argument on the stack. By using a positional specifier (e.g., `%8$n`), we can tell `printf` which argument to look at to find the address to write to.
+
+### Aligning the Payload
+
+Now we need to place our target address (`0x0804a030`) on the stack, at an aligned location (a multiple of 4 bytes) relative to our base (`Arg 4`).
+
+1.  The prefix `"Break stuff.  "` is **14 bytes** long (including the two trailing spaces).
+2.  To align our address on a 4-byte boundary (16), we need to add **2 bytes of padding** (e.g., `\x90\x90`).
+3.  We place our target address (`\x30\xa0\x04\x08`) immediately after.
+
+I checked the new stack structure in GDB:
+
+![Address alignment on the stack](img/corect.png)
+
+Perfect. Our address `0x0804a030` is now placed at `0xffffcc80`.
+
+Let's calculate the final index `N`:
+* **Base:** `Arg 4` (at address `0xffffcc70`)
+* **Address Offset:** `0xffffcc80 - 0xffffcc70 = 0x10` (16 bytes)
+* **Argument Offset:** $16 \text{ bytes} / 4 \text{ bytes/arg} = 4$
+* **Final Index `N`:** $4 \text{ (Base)} + 4 \text{ (Offset)} = \textbf{8}$
+
+We will use **`%8$n`** to tell `printf` to write to the address found at the 8th argument.
+
+---
+
+## 4. Final Payload and Local Testing
+
+The last step is to make sure `printf` prints *exactly* `0x20` (32) characters before it encounters our `%8$n`.
+
+Character count:
+* **Prefix:** 14 characters (`"Break stuff.  "`)
+* **Alignment Padding:** 2 characters (`\x90\x90`)
+* **Address:** 4 characters (treated as text by `printf`)
+* **Total so far:** $14 + 2 + 4 = 20$ characters.
+* **Counting Padding:** $32 \text{ (target)} - 20 \text{ (current)} = \textbf{12}$ characters (e.g., `A` * 12).
+
+The final payload becomes:
 
 ```python
 payload = (
-    b"\x90" * 2 +          # 2 octeți padding de aliniere
-    b"\x30\xa0\x04\x08" +  # Adresa țintă (little-endian)
-    b"A" * 12 +           # 12 octeți padding de numărare (32 total)
-    b"%8$n"               # Specificantul de scriere la Arg 8
+    b"\x90" * 2 +          # 2 bytes of alignment padding
+    b"\x30\xa0\x04\x08" +  # Target address (little-endian)
+    b"A" * 12 +           # 12 bytes of counting padding (32 total)
+    b"%8$n"               # Write specifier for Arg 8
 )

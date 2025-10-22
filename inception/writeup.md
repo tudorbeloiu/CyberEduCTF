@@ -5,7 +5,7 @@
 **URL:** `https://app.cyber-edu.co/challenges/55bee840-7f21-11ea-9848-99f815545ba1`
 ---
 
-This was an easy challenge that tested my knowledge about multiple layers (a file that hides another file in their data).
+This was an easy challenge that tested my knowledge about multiple layers (a hidden file in another file).
 
 We were given a `.zip` archive. First we find out details about it:
 

@@ -17,8 +17,8 @@ an unusual protocol:
   transferred in this capture
 
   I filtered the search by data-text-lines protocol and i found some fake leads, some of them like those:
-
     ![herring1.png](img/herring1.png)
+
 
 Another package that caught my attention was this one:
     ![elf.png](img/elf.png)
@@ -27,7 +27,6 @@ Seeing that `.ELF`, i was pretty sure that i have to extract some executable fro
     ![hexdump.png](img/hexdump.png)
 
 I extracted the executable using this command:
->
     ```bash
     dd if=c1bb of=c1_elf bs=1 skip=323
     ```

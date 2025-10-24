@@ -27,9 +27,9 @@ Seeing that `.ELF`, i was pretty sure that i have to extract some executable fro
     ![hexdump.png](img/hexdump.png)
 
 I extracted the executable using this command:
-    ```bash
+```bash
     dd if=c1bb of=c1_elf bs=1 skip=323
-    ```
+```
 
 But, as I said, there were some red herrings :)))
     ![c1_elf.png](img/c1_elf.png)

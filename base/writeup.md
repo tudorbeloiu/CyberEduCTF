@@ -10,6 +10,7 @@
 Fun challenge that tested my knowledge of basic Python socket scripting and data encoding conversions.
 
 When I tried to reach the address given by this challenge, I got this output:
+
 ![output.png](img/output.png)
 
 Every time i pressed the refresh button, it gave me a different value between `<< >>`
@@ -52,7 +53,9 @@ sock.close()
 
 ```
 When i ran `solve.py`, I got this answer:
+
 ![resp1.png](img/resp1.png)
+
 Ok, so this wasn't all. I modified the code for the next step
 
 

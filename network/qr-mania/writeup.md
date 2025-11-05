@@ -109,13 +109,13 @@ Let's organize them by those numbers:
 69/69: czguxctbmqgfgxhvnwzr.png
 ```
 
-The next step is to remove the unecessary colors from the qr.
+The next step is to remove the unnecessary colors from the qr.
 
 ![bw.png](img/bw.png)
 ![qrbw.png](img/qrbw.png)
 
 
-It's time for the final step: combining our 2 scripts in one!
+It's time for the final step: combining our 2 scripts into one!
 
 ```py
 from pathlib import Path

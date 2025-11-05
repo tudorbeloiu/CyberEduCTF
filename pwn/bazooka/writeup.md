@@ -47,6 +47,6 @@ After a quick search online on what libc version this could be, I found this:
 
 ![libc.png](img/libc.png)
 
-Last time, I used `one_gadget` to find me the offset to an execve(/bin/sh). This time, I'll use the old good method with system(/bin/sh).
+Last time I used `one_gadget` to find the offset to an execve(/bin/sh). This time I'll use the old good method, system(/bin/sh).
 
 ![flag.png](img/flag.png)

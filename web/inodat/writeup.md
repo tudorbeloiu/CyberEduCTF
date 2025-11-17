@@ -17,9 +17,9 @@ The `/api/v1/index/` page gave me another 2 enpdoints:
 ![endpoint.png](img/burp.png)
 ![base64e.png](img/base64e.png)
 
-Those 2 webpages required the "data" parameter and as you have guessed, one encodes the value of the param "data=" and the other one encodes in base64 the value given in "data". Maybe this will help us later.
+Those 2 webpages required the "data" parameter and as you have guessed, one encodes the value of the param "data" and the other one DEcodes from base64 the value from "data". Maybe this will help us later.
 
-Coming back to `api/v1/math`, I could not find any get parameter using `common.txt`.
+Coming back to `api/v1/math`, I could not find any get parameters using `common.txt`.
 
 I used the list `burp-parameter-names.txt` which contains more param words:
 

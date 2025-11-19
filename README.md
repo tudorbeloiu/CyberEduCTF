@@ -1,2 +1,2 @@
-These are writeups of some `CTF` challenges on the `https://cyber-edu.co/ platform. `
+These are writeups of some `CTF` challenges on `https://cyber-edu.co/`
 # Feel free to be inspired by my solutions

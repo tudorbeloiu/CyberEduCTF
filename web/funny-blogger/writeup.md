@@ -9,8 +9,8 @@
 
 ![inside.png](img/inside.png)
 
-So the page it pulls the article number out of the URL and it sends a post request to /query.
-The filed "data" contains a base64 encoding.
+So the page pulls the article number out of the URL and it sends a post request to /query.
+The field "data" contains a base64 encoding.
 The base64 decodes to JSON containing a GraphQL query:
 
 ![graphql.png](img/graphql.png)
